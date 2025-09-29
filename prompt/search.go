@@ -4,34 +4,11 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/huh"
 	"github.com/charmbracelet/lipgloss"
 )
-
-type filter string
-
-type searchStyle struct {
-	Title,
-	Descr,
-	Filter,
-	Cursor,
-	List,
-	Summary,
-	Help lipgloss.Style
-}
-
-func newSearchStyle(theme *huh.Theme) *searchStyle {
-	ss := searchStyle{}
-	ss.Title = theme.Focused.Title
-	ss.Descr = theme.Focused.Description
-	ss.Filter = theme.Focused.File
-	ss.Cursor = theme.Focused.SelectedOption
-	ss.List = theme.Focused.UnselectedOption
-	ss.Summary = theme.Help.ShortKey
-	ss.Help = theme.Help.FullKey
-	return &ss
-}
 
 type cursor struct {
 	index      int
@@ -56,16 +33,15 @@ type searchModel struct {
 	help        string
 	cursor      cursor
 
-	lg           *lipgloss.Renderer
-	style        *searchStyle
-	fullList     []*Item
-	filteredList []*Item
-	selectedItem *Item
-	width        int
-	height       int
+	lg            *lipgloss.Renderer
+	theme         *huh.Theme
+	fullList      []*Item
+	filteredList  []*Item
+	selectedItem  *Item
+	width         int
+	height        int
+	caseSensitive bool
 }
-
-var searchResult = &Item{}
 
 func newSearch(opts ...PromptOption) (*searchModel, error) {
 	pb, err := newPromptBuilder(formSearch)
@@ -76,20 +52,20 @@ func newSearch(opts ...PromptOption) (*searchModel, error) {
 		modify(pb)
 	}
 	sm := searchModel{
-		filter:       "",
-		cursor:       defaultCursor,
-		lg:           lipgloss.DefaultRenderer(),
-		fullList:     pb.items,
-		filteredList: pb.items,
-		// selectedItem: &Item{},
-		title:       pb.title,
-		style:       newSearchStyle(pb.theme),
-		description: pb.description,
-		body:        "",
-		summary:     "",
-		help:        defaultHelpSearch,
-		width:       pb.width,
-		height:      pb.height,
+		filter:        "",
+		cursor:        defaultCursor,
+		lg:            lipgloss.DefaultRenderer(),
+		fullList:      pb.items,
+		filteredList:  pb.items,
+		title:         pb.title,
+		theme:         pb.theme,
+		description:   pb.description,
+		body:          "",
+		summary:       "",
+		help:          defaultHelpSearch,
+		width:         pb.width,
+		height:        pb.height,
+		caseSensitive: pb.searchCaseSensitive,
 	}
 	copy(sm.filteredList, sm.fullList)
 	return &sm, nil
@@ -105,14 +81,30 @@ func (sm *searchModel) updateFilter() {
 		sm.filteredList = sm.fullList
 	default:
 		list := []*Item{}
+		searchTerm := normalizeFilter(sm.filter, sm.caseSensitive)
+
 		for _, item := range sm.fullList {
-			if strings.Contains(item.GetKey(), sm.filter) {
+			if sm.matchSearch(item, searchTerm) {
 				list = append(list, item)
 			}
 		}
 		sm.filteredList = list
-		sm.cursor.index = 0
 	}
+}
+
+func normalizeFilter(filter string, caseSensitive bool) string {
+	if !caseSensitive {
+		return strings.ToLower(filter)
+	}
+	return filter
+}
+
+func (sm *searchModel) matchSearch(item *Item, searchTerm string) bool {
+	itemKey := item.GetKey()
+	if !sm.caseSensitive {
+		itemKey = strings.ToLower(itemKey)
+	}
+	return strings.Contains(itemKey, searchTerm)
 }
 
 func (sm searchModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -196,23 +188,27 @@ func (sm *searchModel) getSelectedItem() *Item {
 	return nil
 }
 
+func startLine() string {
+	return lipgloss.NewStyle().Render("\n┃ ")
+}
+
 func (sm *searchModel) viewTitle() string {
 	if sm.title == "" {
 		return ""
 	}
-	return sm.style.Title.Render(sm.title) + "\n"
+	return sm.theme.Focused.TextInput.Prompt.Render("┃ ") + sm.theme.Focused.Title.Render(sm.title)
 }
 
 func (sm *searchModel) viewDescription() string {
 	if sm.description == "" {
 		return ""
 	}
-	return sm.style.Descr.Render(sm.description) + "\n"
+	return startLine() + sm.theme.Focused.Description.Render(sm.description)
 }
 
 func (sm *searchModel) viewFilter() string {
-	s := sm.style.Filter.Render("filter: "+sm.filter) + "\n"
-	s += " " + "\n"
+	s := startLine() + "filter: " + sm.theme.Focused.TextInput.Prompt.Render(sm.filter)
+	s += startLine()
 	return s
 }
 
@@ -222,7 +218,7 @@ func (sm *searchModel) viewBody() string {
 	s := ""
 	for i := start; i < end; i++ {
 		item := sm.filteredList[i]
-		s += sm.renderCursor(i) + sm.renderItem(item) + "\n"
+		s += startLine() + sm.renderCursor(i) + sm.renderItem(item)
 	}
 	return s
 }
@@ -232,51 +228,23 @@ func (sm *searchModel) renderCursor(index int) string {
 	if index == sm.cursor.index {
 		cursStr = sm.cursor.selected
 	}
-	return sm.style.Cursor.Render(cursStr)
+	return sm.theme.Focused.SelectedOption.Render(cursStr)
 }
 
 func (sm *searchModel) renderItem(item *Item) string {
-	clean := strings.Split(item.Key, sm.filter)
-	s := ""
-	for i := 0; i < len(clean); i++ {
-		s += clean[i]
-		if i == len(clean)-1 {
-			continue
-		}
-		s += sm.style.Cursor.Render(sm.filter)
+	/*
+		ai generated func
+	*/
+	s := item.GetKey()
+	lowerItem := strings.ToLower(item.GetKey())
+	lowerInput := strings.ToLower(sm.filter)
+	if idx := strings.Index(lowerItem, lowerInput); idx != -1 {
+		before := item.GetKey()[:idx]
+		match := item.GetKey()[idx : idx+len(sm.filter)]
+		after := item.GetKey()[idx+len(sm.filter):]
+		s = before + sm.theme.Focused.SelectedOption.Render(match) + after
 	}
 	return s
-}
-
-func (sm *searchModel) renderListed(i int) string {
-	s := ""
-	item := sm.filteredList[i]
-	switch i {
-	case sm.cursor.index:
-		s += sm.style.Cursor.Render(sm.cursor.selected) + renderItemKey(sm.style.Filter, item.GetKey(), sm.filter) + "\n"
-	default:
-		s += sm.style.Cursor.Render(sm.cursor.unselected) + renderItemKey(sm.style.Filter, item.GetKey(), sm.filter) + "\n"
-	}
-	return s
-}
-
-func renderItemKey(style lipgloss.Style, key string, filter string) string {
-	parts := strings.Split(key, filter)
-	switch len(parts) {
-	case 1:
-		return key
-	default:
-		s := ""
-		connectorStr := style.Render(filter)
-		for i := range parts {
-			s += parts[i]
-			if i == len(parts)-1 {
-				continue
-			}
-			s += connectorStr
-		}
-		return s
-	}
 }
 
 func (sm *searchModel) maxCursorIndexAllowed() int {
@@ -296,17 +264,24 @@ func (sm *searchModel) maxListHeight() int {
 }
 
 func (sm *searchModel) viewSummary() string {
-	s := "\n"
+	s := ""
 	if len(sm.filteredList) != sm.maxCursorIndexAllowed() || len(sm.filteredList) != len(sm.fullList) {
-		s += sm.style.Summary.Render(fmt.Sprintf(" %v/%v items filtered", len(sm.filteredList), len(sm.fullList))) + "\n"
+		s += startLine() + startLine() + sm.theme.Focused.Option.Render(fmt.Sprintf("%v/%v items filtered", len(sm.filteredList), len(sm.fullList)))
+	}
+	if sm.maxCursorIndexAllowed()-sm.cursor.offset != len(sm.filteredList) {
+		s += "\n" + sm.theme.Help.ShortKey.Render(fmt.Sprintf("show items [%v-%v] of %v filtered", sm.cursor.offset, sm.maxCursorIndexAllowed(), len(sm.filteredList)))
 
 	}
-	s += sm.style.Summary.Render(fmt.Sprintf(" show items [%v-%v] of %v filtered", sm.cursor.offset, sm.maxCursorIndexAllowed(), len(sm.filteredList))) + "\n"
+
 	return s
 }
 
 func (sm *searchModel) viewHelp() string {
-	return sm.style.Help.Render("\n"+fmt.Sprintf("%v", sm.help)) + "\n"
+	return renderHelp(sm.theme, []key.Binding{
+		key.NewBinding(key.WithHelp("↑/↓", "move cursor")),
+		key.NewBinding(key.WithHelp("enter", "submit")),
+		key.NewBinding(key.WithHelp("esc", "cancel")),
+	})
 }
 
 func (sm searchModel) View() string {
@@ -319,5 +294,16 @@ func (sm searchModel) View() string {
 	s += sm.viewBody()
 	s += sm.viewSummary()
 	s += sm.viewHelp()
+	return s
+}
+
+func renderHelp(theme *huh.Theme, binds []key.Binding) string {
+	s := "\n\n"
+	for i, bind := range binds {
+		s += theme.Help.FullKey.Render(bind.Help().Key) + " " + theme.Help.FullDesc.Render(bind.Help().Desc)
+		if i != len(binds)-1 {
+			s += theme.Help.FullSeparator.Render(" • ")
+		}
+	}
 	return s
 }

@@ -35,7 +35,7 @@ import (
 
 func TestSelectMultiple(t *testing.T) {
 	items := []*prompt.Item{}
-	for i := 0; i < 50; i++ {
+	for i := 0; i < 555; i++ {
 		items = append(items, prompt.CreateItem(fmt.Sprintf("object %v", i)))
 	}
 	chosen, err := prompt.SelectMultiple(
@@ -52,11 +52,12 @@ func TestSelectMultiple(t *testing.T) {
 
 func TestSearch(t *testing.T) {
 	items := []*prompt.Item{}
-	for i := 0; i < 500000; i++ {
+	for i := 0; i < 15; i++ {
 		items = append(items, prompt.CreateItem(fmt.Sprintf("object %v", i)))
 	}
 
 	item, err := prompt.SearchItem(
+		prompt.WithDescription("me descr"),
 		prompt.FromItems(items...),
 	)
 	fmt.Println(err)

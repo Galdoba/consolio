@@ -32,9 +32,9 @@ func Input(opts ...PromptOption) (string, error) {
 		Value(&pb.userInput)
 
 	form := huh.NewForm(huh.NewGroup(inputPrompt)).
-		WithTheme(pb.theme).
-		WithHeight(pb.height).
-		WithWidth(pb.width)
+		WithTheme(pb.theme)
+		// WithHeight(pb.height).
+		// WithWidth(pb.width)
 
 	if err := form.Run(); err != nil {
 		return "", err
@@ -67,9 +67,9 @@ func SelectSingle(opts ...PromptOption) (*Item, error) {
 	}
 
 	form := huh.NewForm(huh.NewGroup(singlePrompt)).
-		WithTheme(pb.theme).
-		WithHeight(pb.height).
-		WithWidth(pb.width)
+		WithTheme(pb.theme)
+		// WithHeight(pb.height).
+		// WithWidth(pb.width)
 
 	if err := form.Run(); err != nil {
 		return nil, err
@@ -98,9 +98,9 @@ func SelectMultiple(opts ...PromptOption) ([]*Item, error) {
 	multiPrompt.Options(items...)
 
 	form := huh.NewForm(huh.NewGroup(multiPrompt)).
-		WithTheme(pb.theme).
-		WithHeight(pb.height).
-		WithWidth(pb.width)
+		WithTheme(pb.theme)
+		// WithHeight(pb.height).
+		// WithWidth(pb.width)
 
 	if err := form.Run(); err != nil {
 		return nil, err
@@ -125,9 +125,9 @@ func Confirm(opts ...PromptOption) (bool, error) {
 		Value(&pb.outputConfirmation)
 
 	form := huh.NewForm(huh.NewGroup(confirmPrompt)).
-		WithTheme(pb.theme).
-		WithHeight(pb.height).
-		WithWidth(pb.width)
+		WithTheme(pb.theme)
+		// WithHeight(pb.height).
+		// WithWidth(pb.width)
 
 	if err := form.Run(); err != nil {
 		return false, err

@@ -8,6 +8,11 @@ import (
 	"github.com/charmbracelet/x/term"
 )
 
+const (
+	defaultWidth  = 120
+	defaultHeight = 40
+)
+
 type promptBuilder struct {
 	promptType string
 	input      *huh.Input
@@ -34,8 +39,6 @@ type promptBuilder struct {
 	selectInline        bool
 	confirmAffirmative  string
 	confirmNegative     string
-	searchMaxDisplay    int
-	searchAutoSelect    bool
 	searchCaseSensitive bool
 	searchHelpText      string
 	searchInitialFilter string
@@ -48,43 +51,33 @@ type promptBuilder struct {
 }
 
 func newPromptBuilder(form string) (*promptBuilder, error) {
-	width, height, err := term.GetSize(os.Stdout.Fd())
+	termWidth, termHeight, err := term.GetSize(os.Stdout.Fd())
 	if err != nil {
 		return nil, fmt.Errorf("failed to recieve console dimentions: %v", err)
 	}
+	width := min(termWidth, defaultWidth)
+	height := min(termHeight, defaultHeight)
 
 	pb := &promptBuilder{
-		promptType:         form,
-		description:        defaultDescription,
-		prompt:             defaultPrompt,
-		placeholder:        defaultPlaceholder,
-		theme:              huh.ThemeBase16(),
-		textValidator:      defaultTextValiidatorFunc,
-		itemValidator:      defaultItemValiidatorFunc,
-		itemSetValidator:   defaultItemSetValiidatorFunc,
-		selectInline:       false,
-		confirmAffirmative: "Yes",
-		confirmNegative:    "No",
-		// searchMaxDisplay:    defaultDisplayHeight,
-		searchAutoSelect:    true,
+		promptType:          form,
+		description:         defaultDescription,
+		prompt:              defaultPrompt,
+		placeholder:         defaultPlaceholder,
+		theme:               huh.ThemeBase16(),
+		textValidator:       defaultTextValiidatorFunc,
+		itemValidator:       defaultItemValiidatorFunc,
+		itemSetValidator:    defaultItemSetValiidatorFunc,
+		selectInline:        false,
+		confirmAffirmative:  "Yes",
+		confirmNegative:     "No",
 		searchCaseSensitive: false,
-		// searchHelpText:      defaultHelpText,
-		title: defaultPromptTitle(form),
-		// input:               &huh.Input{},
-		// single:              &huh.Select[*Item]{},
-		// multi:               &huh.MultiSelect[*Item]{},
-		// confirm:             &huh.Confirm{},
-		// items:               []*Item{},
+		title:               defaultPromptTitle(form),
 		helpText:            "",
 		height:              height - 1,
 		width:               width,
-		searchMaxDisplay:    0,
 		searchHelpText:      "",
 		searchInitialFilter: "",
 		userInput:           "",
-		// outputSingle:        &Item{},
-		// outputMultiple:      []*Item{},
-		// outputConfirmation:  false,
 	}
 	return pb, nil
 }
