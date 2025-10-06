@@ -1,0 +1,141 @@
+package v2
+
+import (
+	"fmt"
+)
+
+// setTo safely sets a value in promptBuilder's settings map
+func setTo[T OptionType](pb *promptBuilder, key OptionKey[T], value T) {
+	if pb.settings == nil {
+		pb.settings = make(map[any]any)
+	}
+	pb.settings[key] = value
+}
+
+// getRawValueFrom retrieves a raw value from promptBuilder's settings
+func getRawValueFrom[T OptionType](pb *promptBuilder, key OptionKey[T]) (T, bool) {
+	if raw, exists := pb.settings[key]; exists {
+		if value, ok := raw.(T); ok {
+			return value, true
+		}
+	}
+	var zero T
+	return zero, false
+}
+
+// getFrom retrieves a typed value from promptBuilder with fallback to defaults
+func getFrom[T OptionType](pb *promptBuilder, key OptionKey[T]) (T, error) {
+	var zero T
+
+	// First try to get user-set value
+	if value, exists := getRawValueFrom(pb, key); exists {
+		return value, nil
+	}
+
+	// Check if defaults exist for this key
+	defaults, exists := pb.defaltsRegistry.GetDefault(key, pb.promptType)
+	if !exists {
+		return zero, fmt.Errorf("option %s not registered", key)
+	}
+
+	// // Get default for current prompt type
+	// rawDefault, exists := defaults[pb.promptType]
+	// if !exists {
+	// 	return zero, fmt.Errorf("option %s not supported for prompt type %s", key, pb.promptType)
+	// }
+
+	// // Type-safe conversion
+	// defaultVal, ok := rawDefault.(T)
+	// if !ok {
+	// 	return zero, fmt.Errorf("type mismatch for option %s", key)
+	// }
+
+	return defaults.(T), nil
+}
+
+// mustGet retrieves a value or panics if not available
+func mustGet[T OptionType](pb *promptBuilder, key OptionKey[T]) T {
+	value, err := getFrom(pb, key)
+	if err != nil {
+		panic(fmt.Sprintf("Prompt config error: %v", err))
+	}
+	return value
+}
+
+// WithTitle sets the title for a prompt
+func WithTitle(title string) PromptOption {
+	return func(pb *promptBuilder) {
+		setTo(pb, KeyTitle, title)
+	}
+}
+
+func (pb *promptBuilder) getTitle() string {
+	return mustGet[string](pb, KeyTitle)
+}
+
+// WithTitle sets the title for a prompt
+func WithDescription(descr string) PromptOption {
+	return func(pb *promptBuilder) {
+		setTo(pb, KeyDescription, descr)
+	}
+}
+
+func (pb *promptBuilder) getDescription() string {
+	return mustGet[string](pb, KeyDescription)
+}
+
+// WithTitle sets the title for a prompt
+func WithPrompt(prompt string) PromptOption {
+	return func(pb *promptBuilder) {
+		setTo(pb, KeyPrompt, prompt)
+	}
+}
+
+func (pb *promptBuilder) getPrompt() string {
+	return mustGet[string](pb, KeyPrompt)
+}
+
+// WithTitle sets the title for a prompt
+func WithPlaceholder(placeholder string) PromptOption {
+	return func(pb *promptBuilder) {
+		setTo(pb, KeyPlaceholder, placeholder)
+	}
+}
+
+func (pb *promptBuilder) getPlaceholder() string {
+	return mustGet[string](pb, KeyPlaceholder)
+}
+
+// WithTitle sets the title for a prompt
+func WithStringValidator(validator func(string) error) PromptOption {
+	return func(pb *promptBuilder) {
+		setTo(pb, KeyStringValidatorFunc, validator)
+	}
+}
+
+func (pb *promptBuilder) getStringValidator() StringValidatorFunc {
+	return mustGet[StringValidatorFunc](pb, KeyStringValidatorFunc)
+}
+
+func defaultStringValidator(string) error { return nil }
+
+// WithWidth sets the width for a prompt
+func WithWidth(w int) PromptOption {
+	return func(pb *promptBuilder) {
+		setTo(pb, KeyWidth, w)
+	}
+}
+
+// WithHeight sets the height for a prompt
+func WithHeight(h int) PromptOption {
+	return func(pb *promptBuilder) {
+		setTo(pb, KeyHeight, h)
+	}
+}
+
+// FromItems sets the items for selection-based prompts
+func FromItems(items ...*Item) PromptOption {
+	return func(pb *promptBuilder) {
+		setTo(pb, KeyItems, items)
+	}
+}
