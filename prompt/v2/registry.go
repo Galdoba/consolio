@@ -72,6 +72,7 @@ func defaultRegistry() DefaultsRegistry {
 		case ptSelect:
 			registry.SetDefault(KeyTitle, ptType, "select one item:")
 			registry.SetDefault(KeyItems, ptType, []*Item{})
+			// registry.SetDefault(KeyItemValidatorFunc, ptType, defaultItemValidatorFunc)
 		}
 		registry.SetDefault(KeyDescription, ptType, "")
 		registry.SetDefault(KeyWidth, ptType, 0)

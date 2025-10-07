@@ -13,7 +13,7 @@ const (
 
 // OptionType constrains allowed types for options
 type OptionType interface {
-	string | int | []*Item | StringValidatorFunc | *huh.Theme
+	string | int | []*Item | StringValidatorFunc | ItemValidationFunc | *huh.Theme
 }
 
 // OptionKey represents a typed option key
@@ -26,6 +26,7 @@ const (
 	KeyPlaceholder         OptionKey[string]              = "placeholder"
 	KeyStringValidatorFunc OptionKey[StringValidatorFunc] = "string_validator_func"
 	KeyItems               OptionKey[[]*Item]             = "items"
+	KeyItemValidatorFunc   OptionKey[ItemValidationFunc]  = "items_validator_func"
 	KeyWidth               OptionKey[int]                 = "width"
 	KeyHeight              OptionKey[int]                 = "height"
 	KeyTheme               OptionKey[*huh.Theme]          = "theme"

@@ -12,6 +12,7 @@ func setTo[T OptionType](pb *promptBuilder, key OptionKey[T], value T) {
 		pb.settings = make(map[any]any)
 	}
 	pb.settings[key] = value
+	fmt.Println("set", key, value)
 }
 
 // getRawValueFrom retrieves a raw value from promptBuilder's settings
@@ -140,9 +141,25 @@ func (pb *promptBuilder) getTheme() *huh.Theme {
 	return mustGet[*huh.Theme](pb, KeyTheme)
 }
 
+// WithTitle sets the title for a prompt
+func WithItemValidator(validator func(*Item) error) PromptOption {
+	return func(pb *promptBuilder) {
+		fmt.Println("set item validator")
+		setTo(pb, KeyItemValidatorFunc, validator)
+	}
+}
+
+func (pb *promptBuilder) getItemValidator() ItemValidationFunc {
+	return mustGet[ItemValidationFunc](pb, KeyItemValidatorFunc)
+}
+
 // FromItems sets the items for selection-based prompts
 func FromItems(items []*Item) PromptOption {
 	return func(pb *promptBuilder) {
 		setTo(pb, KeyItems, items)
 	}
+}
+
+func (pb *promptBuilder) getItems() []*Item {
+	return mustGet[[]*Item](pb, KeyItems)
 }

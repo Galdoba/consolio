@@ -54,15 +54,19 @@ func NewSelect(opts ...PromptOption) (*Item, error) {
 	case 1:
 		return items[0], nil
 	}
-
 	options := huh.NewOptions[*Item]()
-	for _, item := range items {
+	for i, item := range items {
+		if err := defaultItemValidationFunc(item); err != nil {
+			return nil, fmt.Errorf("bad item list: item %v: %v", i, err)
+		}
 		options = append(options, huh.NewOption(item.Key(), item))
 	}
+
 	selector := huh.NewSelect[*Item]().
 		Title(pb.getTitle()).
 		Description(pb.getDescription()).
 		Value(&val).
+		Validate(pb.getItemValidator()).
 		Options(options...)
 
 	form := huh.NewForm(huh.NewGroup(selector)).
@@ -77,41 +81,48 @@ func NewSelect(opts ...PromptOption) (*Item, error) {
 }
 
 // NewSelectMulti creates a multiselection prompt
-func NewSelectMulti(opts ...PromptOption) (*Item, error) {
-	pb := &promptBuilder{
-		promptType:       ptSelect,
-		settings:         map[any]any{},
-		defaultsRegistry: defaultRegistry(),
-	}
-	for _, modify := range opts {
-		modify(pb)
-	}
-	val := new(Item)
-	items := mustGet[[]*Item](pb, KeyItems)
-	switch len(items) {
-	case 0:
-		return nil, fmt.Errorf("nothing to select from")
-	case 1:
-		return items[0], nil
-	}
+// func NewSelectMulti(opts ...PromptOption) (*Item, error) {
+// 	pb := &promptBuilder{
+// 		promptType:       ptSelect,
+// 		settings:         map[any]any{},
+// 		defaultsRegistry: defaultRegistry(),
+// 	}
+// 	for _, modify := range opts {
+// 		modify(pb)
+// 	}
+// 	val := new(Item)
+// 	items := pb.getItems() // mustGet[[]*Item](pb, KeyItems)
+// 	switch len(items) {
+// 	case 0:
+// 		return nil, fmt.Errorf("nothing to select from")
+// 	case 1:
+// 		return items[0], nil
+// 	}
+// 	options := huh.NewOptions[*Item]()
+// 	validatorFunc := pb.getItemValidator()
+// 	validatorFunc(items[0])
+// 	for _, item := range items {
+// 		fmt.Println("item", item.key)
+// 		if err := validatorFunc(item); err != nil {
+// 			return nil, err
+// 		}
+// 		options = append(options, huh.NewOption(item.Key(), item))
+// 	}
 
-	options := huh.NewOptions[*Item]()
-	for _, item := range items {
-		options = append(options, huh.NewOption(item.Key(), item))
-	}
-	selector := huh.NewSelect[*Item]().
-		Title(pb.getTitle()).
-		Description(pb.getDescription()).
-		Value(&val).
-		Options(options...)
+// 	selector := huh.NewSelect[*Item]().
+// 		Title(pb.getTitle()).
+// 		Description(pb.getDescription()).
+// 		Validate(pb.getItemValidator()).
+// 		Value(&val).
+// 		Options(options...)
 
-	form := huh.NewForm(huh.NewGroup(selector)).
-		WithHeight(pb.getHeight()).
-		WithWidth(pb.getWidth()).
-		WithTheme(pb.getTheme())
-	if err := form.Run(); err != nil {
-		return nil, err
-	}
+// 	form := huh.NewForm(huh.NewGroup(selector)).
+// 		WithHeight(pb.getHeight()).
+// 		WithWidth(pb.getWidth()).
+// 		WithTheme(pb.getTheme())
+// 	if err := form.Run(); err != nil {
+// 		return nil, err
+// 	}
 
-	return val, nil
-}
+// 	return val, nil
+// }

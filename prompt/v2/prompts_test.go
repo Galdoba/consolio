@@ -14,7 +14,7 @@ func TestInput(t *testing.T) {
 			NewItem("FOUR"),
 			NewItem("Five"),
 			NewItem("6")}),
-		WithDescription("selectuion"), WithTitle("me is selection")))
+		WithDescription("selectuion"), WithTitle("me is selection"), WithItemValidator(NoNumbers)))
 
 	// fmt.Println(NewSelect(WithTitle("this is select"), FromItems(
 	// 	NewItem("item 1"),

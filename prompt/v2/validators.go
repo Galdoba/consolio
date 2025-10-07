@@ -3,6 +3,7 @@ package v2
 import (
 	"fmt"
 	"strconv"
+	"strings"
 )
 
 type StringValidatorFunc func(string) error
@@ -24,3 +25,27 @@ func Float64(s string) error {
 }
 
 type ItemValidationFunc func(*Item) error
+
+var defaultItemValidatorFunc ItemValidationFunc = defaultItemValidationFunc
+
+func defaultItemValidationFunc(i *Item) error {
+	fmt.Println("validate", i)
+	if i == nil {
+		return fmt.Errorf("item is nil")
+	}
+	if i.key == "" {
+		return fmt.Errorf("item has no key")
+	}
+	return nil
+}
+
+func NoNumbers(i *Item) error {
+	for l := range strings.SplitSeq(i.key, "") {
+		switch l {
+		case "0", "1", "2", "3", "4", "5", "6", "7", "8", "9":
+			return fmt.Errorf("no numbers allowed")
+		default:
+		}
+	}
+	return nil
+}
