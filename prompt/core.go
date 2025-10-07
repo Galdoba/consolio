@@ -1,4 +1,4 @@
-package v2
+package prompt
 
 import "github.com/charmbracelet/huh"
 

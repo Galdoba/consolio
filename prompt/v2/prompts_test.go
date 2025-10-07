@@ -5,13 +5,6 @@ import (
 	"testing"
 )
 
-func TestInput(t *testing.T) {
-	fmt.Println(NewConfirm())
-
-	// fmt.Println(NewSelect(WithTitle("this is select"), FromItems(
-	// 	NewItem("item 1"),
-	// 	NewItem("item 2"),
-	// )))
-	//
-
+func TestPrompt(t *testing.T) {
+	fmt.Println(SearchItem(FromItems([]*Item{NewItem("Item 1"), NewItem("второй")})))
 }

@@ -1,4 +1,4 @@
-package v2
+package prompt
 
 // Item represents a selectable item in list-based prompts like select, multi-select, and search.
 // It contains a display key and an optional payload for storing additional data.
