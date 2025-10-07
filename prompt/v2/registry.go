@@ -1,6 +1,10 @@
 package v2
 
-import "maps"
+import (
+	"maps"
+
+	"github.com/charmbracelet/huh"
+)
 
 // DefaultsRegistry manages default values for prompt options
 type DefaultsRegistry interface {
@@ -67,10 +71,12 @@ func defaultRegistry() DefaultsRegistry {
 			registry.SetDefault(KeyStringValidatorFunc, ptType, defaultStringValidatorFunc)
 		case ptSelect:
 			registry.SetDefault(KeyTitle, ptType, "select one item:")
+			registry.SetDefault(KeyItems, ptType, []*Item{})
 		}
 		registry.SetDefault(KeyDescription, ptType, "")
 		registry.SetDefault(KeyWidth, ptType, 0)
 		registry.SetDefault(KeyHeight, ptType, 0)
+		registry.SetDefault(KeyTheme, ptType, huh.ThemeBase16())
 	}
 
 	return registry

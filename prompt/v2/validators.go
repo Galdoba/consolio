@@ -22,3 +22,5 @@ func Float64(s string) error {
 	}
 	return nil
 }
+
+type ItemValidationFunc func(*Item) error

@@ -2,6 +2,8 @@ package v2
 
 import (
 	"fmt"
+
+	"github.com/charmbracelet/huh"
 )
 
 // setTo safely sets a value in promptBuilder's settings map
@@ -33,22 +35,10 @@ func getFrom[T OptionType](pb *promptBuilder, key OptionKey[T]) (T, error) {
 	}
 
 	// Check if defaults exist for this key
-	defaults, exists := pb.defaltsRegistry.GetDefault(key, pb.promptType)
+	defaults, exists := pb.defaultsRegistry.GetDefault(key, pb.promptType)
 	if !exists {
 		return zero, fmt.Errorf("option %s not registered", key)
 	}
-
-	// // Get default for current prompt type
-	// rawDefault, exists := defaults[pb.promptType]
-	// if !exists {
-	// 	return zero, fmt.Errorf("option %s not supported for prompt type %s", key, pb.promptType)
-	// }
-
-	// // Type-safe conversion
-	// defaultVal, ok := rawDefault.(T)
-	// if !ok {
-	// 	return zero, fmt.Errorf("type mismatch for option %s", key)
-	// }
 
 	return defaults.(T), nil
 }
@@ -125,6 +115,9 @@ func WithWidth(w int) PromptOption {
 		setTo(pb, KeyWidth, w)
 	}
 }
+func (pb *promptBuilder) getWidth() int {
+	return mustGet[int](pb, KeyWidth)
+}
 
 // WithHeight sets the height for a prompt
 func WithHeight(h int) PromptOption {
@@ -133,8 +126,22 @@ func WithHeight(h int) PromptOption {
 	}
 }
 
+func (pb *promptBuilder) getHeight() int {
+	return mustGet[int](pb, KeyHeight)
+}
+
+func WithTheme(theme *huh.Theme) PromptOption {
+	return func(pb *promptBuilder) {
+		setTo(pb, KeyTheme, theme)
+	}
+}
+
+func (pb *promptBuilder) getTheme() *huh.Theme {
+	return mustGet[*huh.Theme](pb, KeyTheme)
+}
+
 // FromItems sets the items for selection-based prompts
-func FromItems(items ...*Item) PromptOption {
+func FromItems(items []*Item) PromptOption {
 	return func(pb *promptBuilder) {
 		setTo(pb, KeyItems, items)
 	}
