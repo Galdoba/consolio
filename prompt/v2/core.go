@@ -9,27 +9,31 @@ const (
 	ptInput       promptType = "input"
 	ptSelect      promptType = "select"
 	ptSelectMulti promptType = "select_multi"
+	ptConfirm     promptType = "confirm"
 )
 
 // OptionType constrains allowed types for options
 type OptionType interface {
-	string | int | []*Item | StringValidatorFunc | ItemValidationFunc | *huh.Theme
+	string | int | []*Item | StringValidatorFunc | ItemValidationFunc | ItemListValidationFunc | *huh.Theme
 }
 
 // OptionKey represents a typed option key
 type OptionKey[T OptionType] string
 
 const (
-	KeyTitle               OptionKey[string]              = "title"
-	KeyDescription         OptionKey[string]              = "description"
-	KeyPrompt              OptionKey[string]              = "prompt"
-	KeyPlaceholder         OptionKey[string]              = "placeholder"
-	KeyStringValidatorFunc OptionKey[StringValidatorFunc] = "string_validator_func"
-	KeyItems               OptionKey[[]*Item]             = "items"
-	KeyItemValidatorFunc   OptionKey[ItemValidationFunc]  = "items_validator_func"
-	KeyWidth               OptionKey[int]                 = "width"
-	KeyHeight              OptionKey[int]                 = "height"
-	KeyTheme               OptionKey[*huh.Theme]          = "theme"
+	KeyTitle                 OptionKey[string]                 = "title"
+	KeyDescription           OptionKey[string]                 = "description"
+	KeyPrompt                OptionKey[string]                 = "prompt"
+	KeyPlaceholder           OptionKey[string]                 = "placeholder"
+	KeyStringValidatorFunc   OptionKey[StringValidatorFunc]    = "string_validator_func"
+	KeyItems                 OptionKey[[]*Item]                = "items"
+	KeyItemValidatorFunc     OptionKey[ItemValidationFunc]     = "items_validator_func"
+	KeyItemListValidatorFunc OptionKey[ItemListValidationFunc] = "item_list_validator_func"
+	KeyAffirmative           OptionKey[string]                 = "affirmative"
+	KeyNegative              OptionKey[string]                 = "negative"
+	KeyWidth                 OptionKey[int]                    = "width"
+	KeyHeight                OptionKey[int]                    = "height"
+	KeyTheme                 OptionKey[*huh.Theme]             = "theme"
 )
 
 // PromptOption is a function type for configuring prompts

@@ -12,7 +12,6 @@ func setTo[T OptionType](pb *promptBuilder, key OptionKey[T], value T) {
 		pb.settings = make(map[any]any)
 	}
 	pb.settings[key] = value
-	fmt.Println("set", key, value)
 }
 
 // getRawValueFrom retrieves a raw value from promptBuilder's settings
@@ -144,13 +143,23 @@ func (pb *promptBuilder) getTheme() *huh.Theme {
 // WithTitle sets the title for a prompt
 func WithItemValidator(validator func(*Item) error) PromptOption {
 	return func(pb *promptBuilder) {
-		fmt.Println("set item validator")
 		setTo(pb, KeyItemValidatorFunc, validator)
 	}
 }
 
 func (pb *promptBuilder) getItemValidator() ItemValidationFunc {
 	return mustGet[ItemValidationFunc](pb, KeyItemValidatorFunc)
+}
+
+// WithTitle sets the title for a prompt
+func WithItemListValidator(validator func([]*Item) error) PromptOption {
+	return func(pb *promptBuilder) {
+		setTo(pb, KeyItemListValidatorFunc, validator)
+	}
+}
+
+func (pb *promptBuilder) getItemListValidator() ItemListValidationFunc {
+	return mustGet(pb, KeyItemListValidatorFunc)
 }
 
 // FromItems sets the items for selection-based prompts
@@ -162,4 +171,22 @@ func FromItems(items []*Item) PromptOption {
 
 func (pb *promptBuilder) getItems() []*Item {
 	return mustGet[[]*Item](pb, KeyItems)
+}
+
+func WithAffirmative(affirmative string) PromptOption {
+	return func(pb *promptBuilder) {
+		setTo(pb, KeyAffirmative, affirmative)
+	}
+}
+func (pb *promptBuilder) getAffirmative() string {
+	return mustGet(pb, KeyAffirmative)
+}
+
+func WithNegative(negative string) PromptOption {
+	return func(pb *promptBuilder) {
+		setTo(pb, KeyNegative, negative)
+	}
+}
+func (pb *promptBuilder) getNegative() string {
+	return mustGet(pb, KeyNegative)
 }

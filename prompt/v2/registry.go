@@ -62,6 +62,8 @@ func defaultRegistry() DefaultsRegistry {
 	for _, ptType := range []promptType{
 		ptInput,
 		ptSelect,
+		ptSelectMulti,
+		ptConfirm,
 	} {
 		switch ptType {
 		case ptInput:
@@ -72,7 +74,15 @@ func defaultRegistry() DefaultsRegistry {
 		case ptSelect:
 			registry.SetDefault(KeyTitle, ptType, "select one item:")
 			registry.SetDefault(KeyItems, ptType, []*Item{})
-			// registry.SetDefault(KeyItemValidatorFunc, ptType, defaultItemValidatorFunc)
+			registry.SetDefault(KeyItemValidatorFunc, ptType, defaultItemValidatorFunc)
+		case ptSelectMulti:
+			registry.SetDefault(KeyTitle, ptType, "select item(s):")
+			registry.SetDefault(KeyItems, ptType, []*Item{})
+			registry.SetDefault(KeyItemListValidatorFunc, ptType, defaultItemListValidatorFunc)
+		case ptConfirm:
+			registry.SetDefault(KeyTitle, ptType, "confirm:")
+			registry.SetDefault(KeyAffirmative, ptType, "Yes")
+			registry.SetDefault(KeyNegative, ptType, "No")
 		}
 		registry.SetDefault(KeyDescription, ptType, "")
 		registry.SetDefault(KeyWidth, ptType, 0)
